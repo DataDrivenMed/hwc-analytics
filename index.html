@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2025 Women & Children Health Analytics | Enterprise Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&family=Space+Grotesk:wght@300;400;500;600&display=swap');
+  :root {
+    --bg-primary:#08090d;--bg-surface:#0f1117;--bg-elevated:#161921;--bg-card:#1b1f2d;
+    --border:#252836;--border-bright:#2e3347;
+    --accent-teal:#00e5c4;--accent-blue:#4499ff;--accent-violet:#a855f7;
+    --accent-amber:#f59e0b;--accent-red:#ef4444;--accent-emerald:#10b981;
+    --text-primary:#e8ecf4;--text-secondary:#8891a8;--text-muted:#4a5168;
+    --font-display:'Syne',sans-serif;--font-body:'Space Grotesk',sans-serif;
+    --font-mono:'IBM Plex Mono',monospace;
+    --rank-bad:#ef4444;--rank-warn:#f59e0b;--rank-mid:#6366f1;--rank-good:#10b981;--rank-best:#00e5c4;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg-primary);color:var(--text-primary);font-family:var(--font-body);font-size:14px;line-height:1.6;min-height:100vh;overflow-x:hidden;}
+  .site-header{position:sticky;top:0;z-index:100;background:rgba(8,9,13,0.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:60px;}
+  .logo{display:flex;align-items:center;gap:12px;}
+  .logo-mark{width:32px;height:32px;background:linear-gradient(135deg,var(--accent-teal),var(--accent-blue));border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:600;font-size:13px;color:#08090d;}
+  .logo-text{font-family:var(--font-display);font-weight:700;font-size:15px;}
+  .logo-sub{color:var(--text-muted);font-size:11px;font-family:var(--font-mono);}
+  .header-badge{background:rgba(0,229,196,0.1);border:1px solid rgba(0,229,196,0.3);color:var(--accent-teal);padding:4px 12px;border-radius:20px;font-family:var(--font-mono);font-size:11px;}
+  .nav-tabs{display:flex;gap:2px;padding:0 24px;background:var(--bg-surface);border-bottom:1px solid var(--border);overflow-x:auto;}
+  .nav-tab{padding:14px 20px;cursor:pointer;font-family:var(--font-mono);font-size:12px;font-weight:500;color:var(--text-muted);white-space:nowrap;border-bottom:2px solid transparent;transition:all 0.2s;text-transform:uppercase;letter-spacing:0.5px;}
+  .nav-tab:hover{color:var(--text-secondary);}
+  .nav-tab.active{color:var(--accent-teal);border-bottom-color:var(--accent-teal);}
+  .page{display:none;padding:24px;max-width:1600px;margin:0 auto;}
+  .page.active{display:block;}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+  .grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px;}
+  .grid-5{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;}
+  @media(max-width:1200px){.grid-4{grid-template-columns:1fr 1fr;}.grid-5{grid-template-columns:1fr 1fr;}}
+  @media(max-width:900px){.grid-3,.grid-2{grid-template-columns:1fr;}}
+  .card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden;}
+  .card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.05),transparent);}
+  .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .card-title{font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;}
+  .card-badge{font-family:var(--font-mono);font-size:10px;padding:2px 8px;border-radius:4px;}
+  .kpi-value{font-family:var(--font-display);font-size:36px;font-weight:800;line-height:1;margin-bottom:4px;}
+  .kpi-label{color:var(--text-secondary);font-size:13px;margin-bottom:8px;}
+  .kpi-delta{font-family:var(--font-mono);font-size:11px;display:flex;align-items:center;gap:4px;}
+  .section-header{margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border);display:flex;align-items:flex-end;justify-content:space-between;}
+  .section-title{font-family:var(--font-display);font-size:22px;font-weight:700;}
+  .section-subtitle{color:var(--text-secondary);font-size:13px;margin-top:4px;}
+  .section-tag{font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;}
+  .rank-badge{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;font-family:var(--font-mono);font-weight:600;font-size:12px;}
+  .rank-1-10{background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.3);}
+  .rank-11-25{background:rgba(68,153,255,0.15);color:#4499ff;border:1px solid rgba(68,153,255,0.3);}
+  .rank-26-40{background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);}
+  .rank-41-50{background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);}
+  .progress-bar{height:6px;background:var(--bg-elevated);border-radius:3px;overflow:hidden;margin-top:8px;}
+  .progress-fill{height:100%;border-radius:3px;}
+  .data-table{width:100%;border-collapse:collapse;}
+  .data-table th{text-align:left;padding:8px 12px;font-family:var(--font-mono);font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);}
+  .data-table td{padding:10px 12px;border-bottom:1px solid rgba(37,40,54,0.5);font-size:13px;}
+  .data-table tr:hover td{background:rgba(255,255,255,0.02);}
+  .data-table tr:last-child td{border-bottom:none;}
+  select,input[type="text"]{background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);padding:8px 12px;border-radius:8px;font-family:var(--font-mono);font-size:12px;outline:none;transition:border-color 0.2s;}
+  select:focus,input[type="text"]:focus{border-color:var(--accent-teal);}
+  select option{background:var(--bg-elevated);}
+  .bar-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+  .bar-label{width:200px;font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;}
+  .bar-track{flex:1;height:8px;background:var(--bg-elevated);border-radius:4px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:4px;}
+  .bar-val{width:60px;text-align:right;font-family:var(--font-mono);font-size:12px;color:var(--text-primary);}
+  .bar-rank{width:30px;text-align:right;font-family:var(--font-mono);font-size:10px;color:var(--text-muted);}
+  .filter-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px;padding:16px;background:var(--bg-surface);border:1px solid var(--border);border-radius:10px;}
+  .filter-label{font-family:var(--font-mono);font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;}
+  .quadrant-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .quadrant{border-radius:10px;padding:16px;border:1px solid;}
+  .q-maintain{background:rgba(16,185,129,0.05);border-color:rgba(16,185,129,0.2);}
+  .q-leverage{background:rgba(68,153,255,0.05);border-color:rgba(68,153,255,0.2);}
+  .q-monitor{background:rgba(245,158,11,0.05);border-color:rgba(245,158,11,0.2);}
+  .q-intervene{background:rgba(239,68,68,0.05);border-color:rgba(239,68,68,0.2);}
+  .q-label{font-family:var(--font-display);font-size:13px;font-weight:700;margin-bottom:8px;}
+  .q-items{list-style:none;font-size:12px;color:var(--text-secondary);}
+  .q-items li{padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+  .q-items li:last-child{border:none;}
+  .insight-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:12px;margin:4px;cursor:default;}
+  .pill-critical{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#fca5a5;}
+  .pill-warning{background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);color:#fcd34d;}
+  .pill-positive{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#6ee7b7;}
+  .state-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;}
+  .state-cell{aspect-ratio:1;border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:9px;font-weight:600;cursor:pointer;transition:transform 0.15s;border:1px solid rgba(0,0,0,0.2);position:relative;}
+  .state-cell:hover{transform:scale(1.15);z-index:10;}
+  .unit-tag{font-family:var(--font-mono);font-size:10px;color:var(--text-muted);background:var(--bg-elevated);padding:2px 6px;border-radius:4px;}
+  .mb-4{margin-bottom:16px;}.mb-6{margin-bottom:24px;}.mt-2{margin-top:8px;}.mt-4{margin-top:16px;}
+  .text-mono{font-family:var(--font-mono);}.text-teal{color:var(--accent-teal);}.text-red{color:#ef4444;}
+  .text-green{color:#10b981;}.text-amber{color:#f59e0b;}.text-blue{color:#4499ff;}
+  .text-sm{font-size:12px;}.text-xs{font-size:11px;}.text-muted{color:var(--text-muted);}
+  .text-secondary{color:var(--text-secondary);}.font-display{font-family:var(--font-display);}
+  .flex{display:flex;}.items-center{align-items:center;}.justify-between{justify-content:space-between;}
+  .gap-2{gap:8px;}.gap-3{gap:12px;}.w-full{width:100%;}.col-span-2{grid-column:span 2;}
+  ::-webkit-scrollbar{width:6px;height:6px;}
+  ::-webkit-scrollbar-track{background:var(--bg-primary);}
+  ::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:3px;}
+  @keyframes fadeInUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+  .card,.section-header{animation:fadeInUp 0.4s ease both;}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="logo">
+    <div class="logo-mark">HW</div>
+    <div>
+      <div class="logo-text">HealthAnalytics 2025</div>
+      <div class="logo-sub">America's Health Rankings — Women & Children</div>
+    </div>
+  </div>
+  <div class="header-badge">2025 HWC REPORT • ALL 50 STATES</div>
+</header>
+<nav class="nav-tabs">
+  <div class="nav-tab active" onclick="showPage('overview',this)">◈ Overview</div>
+  <div class="nav-tab" onclick="showPage('rankings',this)">↕ State Rankings</div>
+  <div class="nav-tab" onclick="showPage('indicators',this)">⬡ Key Indicators</div>
+  <div class="nav-tab" onclick="showPage('equity',this)">◎ Equity Analysis</div>
+  <div class="nav-tab" onclick="showPage('spotlight',this)">★ Louisiana Spotlight</div>
+  <div class="nav-tab" onclick="showPage('quadrant',this)">⊞ Strategic Matrix</div>
+</nav>
+<div id="page-overview" class="page active">
+  <div class="section-header">
+    <div><div class="section-title">National Overview</div><div class="section-subtitle">2025 Health of Women & Children — Composite Performance Landscape</div></div>
+    <div class="section-tag">86,216 DATA POINTS • 1,650 MEASURES • 50 STATES</div>
+  </div>
+  <div class="grid-5 mb-6">
+    <div class="card"><div class="card-title">Report Scope</div><div class="kpi-value text-teal">1,650</div><div class="kpi-label">Total Measures</div><div class="kpi-delta text-secondary">Across women & children health domains</div></div>
+    <div class="card"><div class="card-title">#1 Ranked State</div><div class="kpi-value text-green">MA</div><div class="kpi-label">Massachusetts</div><div class="kpi-delta text-green">Score: +0.766</div></div>
+    <div class="card"><div class="card-title">National Median</div><div class="kpi-value text-blue">0.001</div><div class="kpi-label">Composite Score</div><div class="kpi-delta text-secondary">Standardized z-score scale</div></div>
+    <div class="card"><div class="card-title">Score Spread</div><div class="kpi-value text-amber">1.63</div><div class="kpi-label">Points #1 to #50</div><div class="kpi-delta text-secondary">MA (+0.766) to LA (−0.868)</div></div>
+    <div class="card"><div class="card-title">South Region Avg</div><div class="kpi-value text-red">−0.33</div><div class="kpi-label">Composite Score</div><div class="kpi-delta text-red">↓ Below all other regions</div></div>
+  </div>
+  <div class="grid-2 mb-6">
+    <div class="card"><div class="card-header"><div class="card-title">Regional Performance</div></div><canvas id="regionChart" height="280"></canvas></div>
+    <div class="card"><div class="card-header"><div class="card-title">Score Distribution — All 50 States</div></div><canvas id="distChart" height="280"></canvas></div>
+  </div>
+  <div class="grid-2 mb-6">
+    <div class="card"><div class="card-header"><div class="card-title">State Score Map — Ranked by Overall</div><div class="text-xs text-muted">Green=Top / Red=Bottom</div></div><div id="stateMap" class="state-grid mt-2"></div></div>
+    <div class="card"><div class="card-header"><div class="card-title">Best & Worst Performing States</div></div><div style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);margin-bottom:8px">TOP 10</div><div id="topStatesTable"></div><div style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);margin:16px 0 8px">BOTTOM 10</div><div id="bottomStatesTable"></div></div>
+  </div>
+</div>
+<div id="page-rankings" class="page">
+  <div class="section-header"><div><div class="section-title">State Rankings Explorer</div><div class="section-subtitle">Compare states across all domains</div></div></div>
+  <div class="filter-bar mb-6">
+    <span class="filter-label">Domain:</span>
+    <select id="domainSelect" onchange="updateRankings()">
+      <option value="Overall">Overall (Women & Children)</option>
+      <option value="Health Outcomes">Health Outcomes</option>
+      <option value="Clinical Care">Clinical Care</option>
+      <option value="Social & Economic">Social & Economic Factors</option>
+      <option value="Behaviors">Behaviors</option>
+      <option value="Physical Environment">Physical Environment</option>
+    </select>
+    <span class="filter-label" style="margin-left:16px">Region:</span>
+    <select id="regionFilter" onchange="updateRankings()">
+      <option value="all">All Regions</option>
+      <option value="Northeast">Northeast</option>
+      <option value="South">South</option>
+      <option value="Midwest">Midwest</option>
+      <option value="West">West</option>
+    </select>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-title" id="rankingsChartLabel">State Rankings — Overall</div></div>
+      <div style="height:600px;overflow-y:auto"><canvas id="rankingsChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Domain Radar Comparison</div>
+        <div style="display:flex;gap:8px">
+          <select id="stateCompare1" onchange="updateRadar()"></select>
+          <select id="stateCompare2" onchange="updateRadar()"></select>
+        </div>
+      </div>
+      <canvas id="radarChart" height="320"></canvas>
+      <div id="radarStats" class="mt-4"></div>
+    </div>
+  </div>
+</div>
+<div id="page-indicators" class="page">
+  <div class="section-header"><div><div class="section-title">Key Health Indicators</div><div class="section-subtitle">Raw metric values across 17 critical measures</div></div></div>
+  <div class="filter-bar">
+    <span class="filter-label">Indicator:</span>
+    <select id="indicatorSelect" onchange="updateIndicator()">
+      <option value="Infant Mortality">Infant Mortality (per 1,000 births)</option>
+      <option value="Maternal Mortality">Maternal Mortality (per 100,000 births)</option>
+      <option value="Child Mortality">Child Mortality (per 100,000)</option>
+      <option value="Teen Births">Teen Births (per 1,000 women 15-19)</option>
+      <option value="Low Birth Weight">Low Birth Weight (%)</option>
+      <option value="Children in Poverty">Children in Poverty (%)</option>
+      <option value="Food Insecurity">Food Insecurity (%)</option>
+      <option value="Obesity Women">Obesity — Women (%)</option>
+      <option value="Smoking Women">Smoking — Women (%)</option>
+      <option value="Drug Deaths Women">Drug Deaths — Women (per 100,000)</option>
+      <option value="Firearm Deaths Children">Firearm Deaths — Children (per 100,000)</option>
+      <option value="Uninsured Women">Uninsured Women (%)</option>
+      <option value="Uninsured Children">Uninsured Children (%)</option>
+      <option value="Well Woman Visit">Well-Woman Visit (%)</option>
+      <option value="Breastfeeding Initiation">Breastfeeding Initiation (%)</option>
+      <option value="Teen Suicide">Teen Suicide (per 100,000)</option>
+      <option value="Adequate Prenatal Care">Adequate Prenatal Care (%)</option>
+    </select>
+  </div>
+  <div class="card mb-6"><div class="card-header"><div class="card-title" id="indicatorChartTitle">Infant Mortality — All States</div><div id="indicatorNatAvg"></div></div><canvas id="indicatorChart" height="320"></canvas></div>
+  <div class="grid-3">
+    <div class="card"><div class="card-title mb-4">National Statistics</div><div id="indicatorStats"></div></div>
+    <div class="card"><div class="card-title mb-4">Best Performing States</div><div id="indicatorBest"></div></div>
+    <div class="card"><div class="card-title mb-4">Worst Performing States</div><div id="indicatorWorst"></div></div>
+  </div>
+</div>
+<div id="page-equity" class="page">
+  <div class="section-header"><div><div class="section-title">Health Equity Analysis</div><div class="section-subtitle">Racial & demographic disparities across key measures</div></div></div>
+  <div class="grid-2 mb-6">
+    <div class="card"><div class="card-header"><div class="card-title">Infant Mortality by Race — National Averages</div><span class="unit-tag">per 1,000 births</span></div><canvas id="equityRaceChart" height="280"></canvas></div>
+    <div class="card"><div class="card-header"><div class="card-title">Children in Poverty by Race</div><span class="unit-tag">%</span></div><canvas id="equityPovertyChart" height="280"></canvas></div>
+  </div>
+  <div class="grid-2 mb-6">
+    <div class="card"><div class="card-header"><div class="card-title">Black vs White Infant Mortality Gap — Select States</div></div><canvas id="equityGapChart" height="280"></canvas></div>
+    <div class="card"><div class="card-header"><div class="card-title">Teen Births by Race — National Rates</div></div><canvas id="equityTeenChart" height="280"></canvas></div>
+  </div>
+  <div class="card"><div class="card-header"><div class="card-title">Equity Summary Table — Louisiana vs National</div></div><div id="equitySummaryTable"></div></div>
+</div>
+<div id="page-spotlight" class="page">
+  <div class="section-header">
+    <div><div class="section-title">Louisiana Spotlight</div><div class="section-subtitle">Comprehensive performance profile — Ranked #50 overall (2025)</div></div>
+    <div style="text-align:right"><div class="kpi-value text-red" style="font-size:48px">50</div><div class="text-xs text-muted">OVERALL RANK</div></div>
+  </div>
+  <div class="mb-6">
+    <span class="insight-pill pill-critical">⚠ #50 Overall</span>
+    <span class="insight-pill pill-critical">⚠ #50 Child Health</span>
+    <span class="insight-pill pill-critical">⚠ #49 Children in Poverty (25%)</span>
+    <span class="insight-pill pill-critical">⚠ #49 Low Birth Weight (11.3%)</span>
+    <span class="insight-pill pill-warning">△ #48 Infant Mortality (7.3/1k)</span>
+    <span class="insight-pill pill-warning">△ #46 Maternal Mortality (40.7/100k)</span>
+    <span class="insight-pill pill-positive">✓ #1 Well-Woman Visit (80.3%)</span>
+    <span class="insight-pill pill-positive">✓ #5 Cervical Cancer Screening</span>
+    <span class="insight-pill pill-positive">✓ #23 Clinical Care Overall</span>
+  </div>
+  <div class="grid-2 mb-6">
+    <div class="card"><div class="card-header"><div class="card-title">Domain Profile — Louisiana vs National Average</div></div><canvas id="laRadarChart" height="320"></canvas></div>
+    <div class="card"><div class="card-header"><div class="card-title">Domain Gap Analysis — Z-Score vs National</div><span class="unit-tag">SD from mean</span></div><div id="laDomainBars" style="padding-top:8px"></div><div class="mt-4" style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);border-top:1px solid var(--border);padding-top:12px">Z &lt; -2.0 = statistically extreme | -1.0 to -2.0 = significant gap | &gt; 0 = at/above national average</div></div>
+  </div>
+  <div class="grid-2 mb-6">
+    <div class="card"><div class="card-header"><div class="card-title">Critical Gaps — Worst Rankings</div></div><div id="laCriticalGaps"></div></div>
+    <div class="card"><div class="card-header"><div class="card-title">Relative Strengths — Best Rankings</div></div><div id="laStrengths"></div></div>
+  </div>
+  <div class="card"><div class="card-header"><div class="card-title">Louisiana vs Southern States — Composite Score</div></div><canvas id="laSouthChart" height="280"></canvas></div>
+</div>
+<div id="page-quadrant" class="page">
+  <div class="section-header"><div><div class="section-title">Strategic Priority Matrix</div><div class="section-subtitle">Four-quadrant framework — Performance vs Gap from National Benchmark</div></div></div>
+  <div class="grid-2 mb-6">
+    <div class="card"><div class="card-header"><div class="card-title">All States — Score vs Rank Scatter</div></div><canvas id="scatterChart" height="380"></canvas></div>
+    <div class="card"><div class="card-header"><div class="card-title">Louisiana Strategic Quadrant Assessment</div></div>
+      <div class="quadrant-grid mt-2">
+        <div class="quadrant q-maintain"><div class="q-label" style="color:#10b981">✓ Maintain Excellence</div><div class="text-xs text-muted mb-4">High Performance / At or Above Benchmark</div><ul class="q-items"><li>Well-Woman Visit (#1, 80.3%)</li><li>Cervical Cancer Screening (#5)</li><li>Clinical Care — Children (#23)</li><li>Teen Suicide Rate (#17)</li></ul></div>
+        <div class="quadrant q-leverage"><div class="q-label" style="color:#4499ff">→ Leverage for Improvement</div><div class="text-xs text-muted mb-4">Moderate Performance / Gap Narrowing</div><ul class="q-items"><li>Uninsured Women (#24, 8.6%)</li><li>Uninsured Children (#24, 4.3%)</li><li>Clinical Care — Women (#31)</li><li>Depression Screening (#36)</li></ul></div>
+        <div class="quadrant q-monitor"><div class="q-label" style="color:#f59e0b">◎ Monitor Closely</div><div class="text-xs text-muted mb-4">Near Benchmark / Potential Volatility</div><ul class="q-items"><li>Adequate Prenatal Care (#34)</li><li>High Health Status Women (#35)</li><li>Smoking — Women (#36)</li><li>High Health Status Children (#41)</li></ul></div>
+        <div class="quadrant q-intervene"><div class="q-label" style="color:#ef4444">⚠ Priority Intervention</div><div class="text-xs text-muted mb-4">Low Performance / Widest Gaps</div><ul class="q-items"><li>Children in Poverty (#49, 25.0%)</li><li>Low Birth Weight (#49, 11.3%)</li><li>Child Mortality (#49, 48.9/100k)</li><li>Infant Mortality (#48, 7.3/1k)</li><li>Maternal Mortality (#46, 40.7/100k)</li><li>Drug Deaths — Women (#46)</li><li>Food Insecurity (#47, 16.2%)</li><li>Teen Births (#48, 23.1)</li></ul></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title">Evidence-Based Priority Recommendations</div></div>
+    <table class="data-table"><thead><tr><th>Priority Area</th><th>Rank</th><th>Z-Score</th><th>Gap Type</th><th>Strategic Recommendation</th></tr></thead>
+    <tbody>
+      <tr><td><span style="color:#ef4444">■</span> Children in Poverty</td><td><span class="rank-badge rank-41-50">49</span></td><td class="text-mono text-red">+2.24 SD</td><td>Structural/Social Determinant</td><td>Expand SNAP, CHIP, EITC access; place-based investment</td></tr>
+      <tr><td><span style="color:#ef4444">■</span> Maternal Mortality</td><td><span class="rank-badge rank-41-50">46</span></td><td class="text-mono text-red">Extreme</td><td>Clinical + Social</td><td>Extend Medicaid postpartum; implicit bias training in OB</td></tr>
+      <tr><td><span style="color:#ef4444">■</span> Low Birth Weight</td><td><span class="rank-badge rank-41-50">49</span></td><td class="text-mono text-red">+2.31 SD</td><td>Behavioral + Clinical</td><td>Prenatal smoking cessation; nutrition supplementation</td></tr>
+      <tr><td><span style="color:#ef4444">■</span> Drug Deaths (Women)</td><td><span class="rank-badge rank-41-50">46</span></td><td class="text-mono text-amber">Extreme</td><td>Behavioral Health</td><td>Expand MAT access, naloxone distribution, harm reduction</td></tr>
+      <tr><td><span style="color:#f59e0b">■</span> Breastfeeding Initiation</td><td><span class="rank-badge rank-41-50">47</span></td><td class="text-mono text-red">-2.00 SD</td><td>Clinical + Cultural</td><td>Lactation consultants in hospitals; WIC BF support</td></tr>
+      <tr><td><span style="color:#10b981">■</span> Well-Woman Visit</td><td><span class="rank-badge rank-1-10">1</span></td><td class="text-mono text-green">+1.78 SD</td><td>Strength to Leverage</td><td>Use infrastructure to drive preventive care uptake</td></tr>
+    </tbody></table>
+  </div>
+</div>
+  <script>
+Chart.defaults.color='#8891a8';Chart.defaults.borderColor='#252836';Chart.defaults.font.family="'IBM Plex Mono',monospace";Chart.defaults.font.size=11;
+const DATA={
+stateNames:{"AL":"Alabama","AK":"Alaska","AZ":"Arizona","AR":"Arkansas","CA":"California","CO":"Colorado","CT":"Connecticut","DE":"Delaware","FL":"Florida","GA":"Georgia","HI":"Hawaii","ID":"Idaho","IL":"Illinois","IN":"Indiana","IA":"Iowa","KS":"Kansas","KY":"Kentucky","LA":"Louisiana","ME":"Maine","MD":"Maryland","MA":"Massachusetts","MI":"Michigan","MN":"Minnesota","MS":"Mississippi","MO":"Missouri","MT":"Montana","NE":"Nebraska","NV":"Nevada","NH":"New Hampshire","NJ":"New Jersey","NM":"New Mexico","NY":"New York","NC":"North Carolina","ND":"North Dakota","OH":"Ohio","OK":"Oklahoma","OR":"Oregon","PA":"Pennsylvania","RI":"Rhode Island","SC":"South Carolina","SD":"South Dakota","TN":"Tennessee","TX":"Texas","UT":"Utah","VT":"Vermont","VA":"Virginia","WA":"Washington","WV":"West Virginia","WI":"Wisconsin","WY":"Wyoming"},
+regions:{"ME":"Northeast","NH":"Northeast","VT":"Northeast","MA":"Northeast","RI":"Northeast","CT":"Northeast","NY":"Northeast","NJ":"Northeast","PA":"Northeast","OH":"Midwest","IN":"Midwest","IL":"Midwest","MI":"Midwest","WI":"Midwest","MN":"Midwest","IA":"Midwest","MO":"Midwest","ND":"Midwest","SD":"Midwest","NE":"Midwest","KS":"Midwest","DE":"South","MD":"South","VA":"South","WV":"South","NC":"South","SC":"South","GA":"South","FL":"South","KY":"South","TN":"South","AL":"South","MS":"South","AR":"South","LA":"South","OK":"South","TX":"South","MT":"West","ID":"West","WY":"West","CO":"West","NM":"West","AZ":"West","UT":"West","NV":"West","WA":"West","OR":"West","CA":"West","AK":"West","HI":"West"},
+overall:{"AK":{score:-0.189,rank:35},"AR":{score:-0.84,rank:49},"AL":{score:-0.504,rank:45},"AZ":{score:-0.182,rank:34},"CT":{score:0.492,rank:7},"CA":{score:0.14,rank:18},"CO":{score:0.482,rank:8},"DE":{score:0.056,rank:21},"FL":{score:-0.171,rank:33},"GA":{score:-0.281,rank:38},"HI":{score:0.339,rank:12},"IA":{score:0.211,rank:15},"ID":{score:0.049,rank:22},"IL":{score:0.1,rank:20},"IN":{score:-0.147,rank:31},"KS":{score:0.14,rank:17},"KY":{score:-0.345,rank:40},"LA":{score:-0.868,rank:50},"MA":{score:0.766,rank:1},"MD":{score:0.462,rank:9},"ME":{score:0.367,rank:11},"MI":{score:0.014,rank:24},"MN":{score:0.607,rank:3},"MO":{score:-0.258,rank:37},"MS":{score:-0.806,rank:48},"MT":{score:-0.035,rank:26},"NC":{score:-0.038,rank:27},"ND":{score:0.118,rank:19},"NE":{score:0.274,rank:14},"NH":{score:0.587,rank:4},"NJ":{score:0.522,rank:6},"NM":{score:-0.455,rank:42},"NV":{score:-0.477,rank:43},"NY":{score:0.304,rank:13},"OH":{score:-0.081,rank:29},"OK":{score:-0.712,rank:47},"OR":{score:0.032,rank:23},"PA":{score:-0.063,rank:28},"RI":{score:0.206,rank:16},"SC":{score:-0.3,rank:39},"SD":{score:-0.091,rank:30},"TN":{score:-0.503,rank:44},"TX":{score:-0.368,rank:41},"UT":{score:0.55,rank:5},"VA":{score:0.01,rank:25},"VT":{score:0.628,rank:2},"WA":{score:0.445,rank:10},"WI":{score:-0.155,rank:32},"WV":{score:-0.62,rank:46},"WY":{score:-0.24,rank:36}},
+domains:{"Health Outcomes":{"AK":-0.162,"AR":-0.726,"AL":-0.588,"AZ":-0.164,"CT":0.424,"CA":-0.073,"CO":0.385,"DE":-0.022,"FL":-0.329,"GA":-0.335,"HI":0.325,"IA":0.152,"ID":-0.128,"IL":-0.065,"IN":-0.199,"KS":-0.026,"KY":-0.438,"LA":-1.21,"MA":0.756,"MD":0.208,"ME":0.376,"MI":-0.213,"MN":0.555,"MO":-0.311,"MS":-0.925,"MT":-0.196,"NC":-0.263,"ND":-0.023,"NE":0.116,"NH":0.596,"NJ":0.407,"NM":-0.569,"NV":-0.595,"NY":0.218,"OH":-0.124,"OK":-0.643,"OR":-0.043,"PA":-0.138,"RI":0.111,"SC":-0.411,"SD":-0.174,"TN":-0.569,"TX":-0.419,"UT":0.412,"VA":0.015,"VT":0.538,"WA":0.334,"WI":-0.149,"WV":-0.625,"WY":-0.268},
+"Clinical Care":{"AK":-0.452,"AR":-1.015,"AL":-0.637,"AZ":-0.175,"CT":0.69,"CA":0.405,"CO":0.587,"DE":0.403,"FL":0.161,"GA":-0.165,"HI":0.564,"IA":0.509,"ID":-0.088,"IL":0.455,"IN":0.044,"KS":0.354,"KY":-0.136,"LA":0.289,"MA":1.483,"MD":0.889,"ME":0.684,"MI":0.358,"MN":1.102,"MO":0.232,"MS":-0.788,"MT":-0.327,"NC":0.208,"ND":0.09,"NE":0.386,"NH":1.119,"NJ":1.033,"NM":-0.492,"NV":-0.635,"NY":0.861,"OH":0.284,"OK":-0.673,"OR":0.329,"PA":0.42,"RI":0.774,"SC":-0.087,"SD":0.055,"TN":-0.335,"TX":-0.331,"UT":0.48,"VA":0.44,"VT":1.009,"WA":0.647,"WI":0.59,"WV":-0.394,"WY":-0.197},
+"Social & Economic":{"AK":-0.087,"AR":-1.214,"AL":-0.726,"AZ":-0.424,"CT":0.539,"CA":0.117,"CO":0.562,"DE":0.338,"FL":-0.162,"GA":-0.362,"HI":0.419,"IA":0.487,"ID":0.011,"IL":0.109,"IN":-0.104,"KS":0.199,"KY":-0.503,"LA":-1.044,"MA":0.966,"MD":0.772,"ME":0.211,"MI":-0.159,"MN":0.734,"MO":-0.393,"MS":-1.092,"MT":0.143,"NC":-0.123,"ND":0.561,"NE":0.462,"NH":0.763,"NJ":0.549,"NM":-0.639,"NV":-0.463,"NY":0.185,"OH":-0.269,"OK":-0.831,"OR":0.056,"PA":-0.067,"RI":0.085,"SC":-0.461,"SD":0.229,"TN":-0.646,"TX":-0.565,"UT":0.558,"VA":0.295,"VT":0.506,"WA":0.538,"WI":0.133,"WV":-0.958,"WY":0.145},
+"Behaviors":{"AK":-0.267,"AR":-1.049,"AL":-1.029,"AZ":-0.035,"CT":0.584,"CA":0.395,"CO":0.671,"DE":0.022,"FL":-0.05,"GA":-0.247,"HI":0.604,"IA":0.293,"ID":0.386,"IL":0.249,"IN":-0.113,"KS":0.182,"KY":-0.676,"LA":-1.188,"MA":0.938,"MD":0.299,"ME":0.527,"MI":-0.079,"MN":0.714,"MO":-0.397,"MS":-1.257,"MT":0.182,"NC":0.041,"ND":0.161,"NE":0.368,"NH":0.714,"NJ":0.289,"NM":-0.307,"NV":-0.298,"NY":0.277,"OH":-0.197,"OK":-0.786,"OR":0.219,"PA":-0.158,"RI":0.179,"SC":-0.372,"SD":0.199,"TN":-0.759,"TX":-0.408,"UT":0.562,"VA":0.106,"VT":0.745,"WA":0.459,"WI":0.043,"WV":-1.108,"WY":-0.169},
+"Physical Environment":{"AK":-0.052,"AR":-0.377,"AL":-0.391,"AZ":0.007,"CT":0.421,"CA":0.115,"CO":0.411,"DE":0.235,"FL":0.037,"GA":-0.079,"HI":0.378,"IA":0.302,"ID":0.292,"IL":0.018,"IN":-0.203,"KS":0.204,"KY":-0.266,"LA":-0.579,"MA":0.62,"MD":0.232,"ME":0.786,"MI":-0.07,"MN":0.407,"MO":-0.093,"MS":-0.649,"MT":0.499,"NC":-0.043,"ND":0.445,"NE":0.397,"NH":0.657,"NJ":-0.068,"NM":-0.182,"NV":-0.263,"NY":0.086,"OH":0.008,"OK":-0.18,"OR":0.27,"PA":-0.022,"RI":0.054,"SC":-0.109,"SD":0.395,"TN":-0.314,"TX":-0.137,"UT":0.465,"VA":0.084,"VT":0.512,"WA":0.431,"WI":0.137,"WV":-0.313,"WY":0.328}},
+indicators:{"Infant Mortality":{unit:"per 1,000 births",good:false,data:{"AK":5.6,"AR":7.4,"AL":8.1,"AZ":5.5,"CT":5.5,"CA":3.9,"CO":4.6,"DE":7.1,"FL":6.0,"GA":7.4,"HI":5.6,"IA":5.0,"ID":4.9,"IL":6.1,"IN":7.0,"KS":6.1,"KY":7.0,"LA":7.3,"MA":3.6,"MD":6.7,"ME":5.7,"MI":6.3,"MN":4.3,"MO":7.1,"MS":9.0,"MT":5.7,"NC":6.4,"ND":5.3,"NE":5.5,"NH":3.2,"NJ":4.6,"NM":6.1,"NV":6.2,"NY":4.7,"OH":6.9,"OK":7.2,"OR":4.8,"PA":6.2,"RI":6.4,"SC":7.2,"SD":6.3,"TN":7.6,"TX":5.7,"UT":4.7,"VA":5.6,"VT":4.4,"WA":4.1,"WI":5.7,"WV":7.5,"WY":5.8}},
+"Maternal Mortality":{unit:"per 100,000 births",good:false,data:{"AK":21.6,"AR":40.0,"AL":36.4,"AZ":19.3,"CT":8.5,"CA":11.5,"CO":13.8,"DE":25.6,"FL":23.8,"GA":33.2,"HI":11.5,"IA":14.5,"ID":17.3,"IL":16.9,"IN":29.1,"KS":22.8,"KY":29.2,"LA":40.7,"MA":10.1,"MD":18.3,"ME":16.1,"MI":24.0,"MN":8.2,"MO":27.5,"MS":48.0,"MT":18.0,"NC":25.0,"ND":12.0,"NE":15.0,"NH":7.8,"NJ":13.1,"NM":26.0,"NV":21.3,"NY":17.6,"OH":21.2,"OK":33.0,"OR":16.0,"PA":20.5,"RI":16.0,"SC":29.0,"SD":18.0,"TN":29.8,"TX":23.5,"UT":9.9,"VA":17.0,"VT":9.5,"WA":13.3,"WI":15.0,"WV":37.0,"WY":24.0}},
+"Child Mortality":{unit:"per 100,000",good:false,data:{"AK":25.8,"AR":53.4,"AL":50.5,"AZ":26.5,"CT":14.0,"CA":18.1,"CO":20.9,"DE":25.0,"FL":29.4,"GA":37.1,"HI":18.2,"IA":21.8,"ID":23.2,"IL":23.2,"IN":34.1,"KS":26.7,"KY":41.1,"LA":48.9,"MA":12.3,"MD":21.5,"ME":17.4,"MI":29.7,"MN":13.7,"MO":37.7,"MS":61.5,"MT":25.0,"NC":26.4,"ND":18.8,"NE":21.0,"NH":12.0,"NJ":15.7,"NM":35.5,"NV":29.0,"NY":17.1,"OH":29.4,"OK":49.5,"OR":22.0,"PA":26.2,"RI":15.0,"SC":38.7,"SD":24.0,"TN":41.2,"TX":30.5,"UT":18.5,"VA":20.8,"VT":14.0,"WA":20.0,"WI":23.2,"WV":48.0,"WY":28.0}},
+"Teen Births":{unit:"per 1,000 women 15-19",good:false,data:{"AK":17.0,"AR":30.7,"AL":27.6,"AZ":18.4,"CT":8.8,"CA":13.7,"CO":12.4,"DE":14.5,"FL":15.7,"GA":22.3,"HI":16.3,"IA":12.5,"ID":14.8,"IL":13.2,"IN":19.5,"KS":16.4,"KY":22.8,"LA":23.1,"MA":6.0,"MD":13.4,"ME":10.8,"MI":14.1,"MN":7.7,"MO":21.0,"MS":30.0,"MT":17.0,"NC":17.5,"ND":12.0,"NE":13.2,"NH":5.8,"NJ":8.4,"NM":24.5,"NV":18.0,"NY":10.0,"OH":18.0,"OK":26.5,"OR":11.3,"PA":13.0,"RI":10.5,"SC":22.0,"SD":18.0,"TN":25.0,"TX":22.0,"UT":11.0,"VA":12.0,"VT":7.0,"WA":11.5,"WI":12.5,"WV":26.0,"WY":16.0}},
+"Low Birth Weight":{unit:"%",good:false,data:{"AK":5.8,"AR":10.5,"AL":10.5,"AZ":7.2,"CT":6.9,"CA":7.0,"CO":7.3,"DE":8.5,"FL":8.8,"GA":9.9,"HI":7.5,"IA":6.6,"ID":6.5,"IL":8.1,"IN":8.4,"KS":7.5,"KY":9.1,"LA":11.3,"MA":6.4,"MD":8.6,"ME":6.1,"MI":7.9,"MN":5.9,"MO":8.3,"MS":11.0,"MT":6.5,"NC":8.7,"ND":6.2,"NE":6.9,"NH":5.7,"NJ":8.0,"NM":8.2,"NV":8.1,"NY":7.8,"OH":8.4,"OK":9.1,"OR":6.4,"PA":8.0,"RI":7.4,"SC":9.8,"SD":6.5,"TN":9.7,"TX":8.4,"UT":6.2,"VA":7.6,"VT":5.8,"WA":6.3,"WI":6.6,"WV":10.0,"WY":7.0}},
+"Children in Poverty":{unit:"%",good:false,data:{"AK":11.5,"AR":24.8,"AL":22.5,"AZ":19.2,"CT":10.8,"CA":15.5,"CO":9.5,"DE":14.5,"FL":17.0,"GA":20.0,"HI":10.2,"IA":10.5,"ID":12.0,"IL":15.5,"IN":15.0,"KS":12.5,"KY":20.0,"LA":25.0,"MA":10.0,"MD":9.5,"ME":11.5,"MI":16.5,"MN":9.0,"MO":17.5,"MS":27.5,"MT":14.0,"NC":17.0,"ND":9.5,"NE":11.0,"NH":6.5,"NJ":10.5,"NM":24.5,"NV":16.5,"NY":17.5,"OH":17.5,"OK":22.5,"OR":14.0,"PA":15.5,"RI":14.0,"SC":19.5,"SD":13.0,"TN":21.0,"TX":20.0,"UT":7.5,"VA":10.0,"VT":8.5,"WA":11.0,"WI":12.0,"WV":22.0,"WY":11.0}},
+"Food Insecurity":{unit:"%",good:false,data:{"AK":14.0,"AR":17.5,"AL":17.0,"AZ":14.5,"CT":9.5,"CA":12.5,"CO":9.0,"DE":11.5,"FL":14.0,"GA":14.5,"HI":11.0,"IA":10.5,"ID":11.0,"IL":13.0,"IN":13.5,"KS":11.5,"KY":16.0,"LA":16.2,"MA":9.0,"MD":10.5,"ME":11.5,"MI":13.5,"MN":9.0,"MO":13.5,"MS":18.5,"MT":12.0,"NC":14.5,"ND":9.5,"NE":10.0,"NH":7.5,"NJ":9.5,"NM":16.5,"NV":13.5,"NY":12.5,"OH":14.0,"OK":17.0,"OR":13.0,"PA":13.0,"RI":11.0,"SC":15.5,"SD":11.0,"TN":16.0,"TX":15.0,"UT":7.0,"VA":10.0,"VT":9.5,"WA":11.5,"WI":10.5,"WV":18.0,"WY":11.5}},
+"Obesity Women":{unit:"%",good:false,data:{"AK":33.5,"AR":41.5,"AL":41.0,"AZ":31.5,"CT":28.5,"CA":28.5,"CO":27.0,"DE":36.5,"FL":31.5,"GA":37.0,"HI":26.0,"IA":36.0,"ID":31.5,"IL":34.0,"IN":38.5,"KS":36.5,"KY":40.5,"LA":41.9,"MA":27.0,"MD":33.0,"ME":32.5,"MI":36.5,"MN":30.0,"MO":38.0,"MS":42.5,"MT":30.5,"NC":35.5,"ND":35.5,"NE":34.5,"NH":30.0,"NJ":29.0,"NM":33.0,"NV":31.5,"NY":30.5,"OH":37.5,"OK":40.5,"OR":31.5,"PA":34.5,"RI":33.5,"SC":38.0,"SD":35.0,"TN":41.5,"TX":37.5,"UT":26.5,"VA":31.5,"VT":30.0,"WA":30.0,"WI":34.0,"WV":43.0,"WY":34.0}},
+"Smoking Women":{unit:"%",good:false,data:{"AK":18.0,"AR":22.5,"AL":20.5,"AZ":13.0,"CT":12.5,"CA":8.5,"CO":12.5,"DE":17.0,"FL":15.0,"GA":15.5,"HI":10.0,"IA":17.0,"ID":14.5,"IL":15.0,"IN":20.5,"KS":17.5,"KY":24.5,"LA":13.7,"MA":9.5,"MD":12.5,"ME":16.5,"MI":18.0,"MN":13.5,"MO":21.0,"MS":22.5,"MT":18.5,"NC":17.5,"ND":18.0,"NE":14.5,"NH":14.5,"NJ":10.5,"NM":16.0,"NV":17.0,"NY":13.5,"OH":19.5,"OK":21.5,"OR":15.0,"PA":17.5,"RI":15.0,"SC":19.0,"SD":17.5,"TN":23.0,"TX":13.0,"UT":7.5,"VA":14.0,"VT":15.5,"WA":13.5,"WI":17.0,"WV":28.0,"WY":18.0}},
+"Drug Deaths Women":{unit:"per 100,000",good:false,data:{"AK":18.5,"AR":25.0,"AL":22.0,"AZ":22.5,"CT":31.0,"CA":11.5,"CO":17.0,"DE":38.0,"FL":23.5,"GA":16.0,"HI":7.5,"IA":10.5,"ID":15.5,"IL":20.0,"IN":27.0,"KS":13.5,"KY":38.5,"LA":50.2,"MA":29.5,"MD":39.0,"ME":32.5,"MI":24.0,"MN":14.0,"MO":28.5,"MS":16.0,"MT":15.0,"NC":22.0,"ND":8.0,"NE":10.0,"NH":27.5,"NJ":22.0,"NM":30.0,"NV":22.5,"NY":23.5,"OH":38.5,"OK":23.5,"OR":22.5,"PA":33.5,"RI":30.0,"SC":23.0,"SD":9.5,"TN":32.0,"TX":12.0,"UT":18.5,"VA":17.0,"VT":28.0,"WA":19.5,"WI":18.5,"WV":55.0,"WY":15.5}},
+"Firearm Deaths Children":{unit:"per 100,000",good:false,data:{"AK":9.5,"AR":14.5,"AL":14.5,"AZ":8.0,"CT":3.0,"CA":4.5,"CO":5.5,"DE":7.0,"FL":8.5,"GA":12.5,"HI":1.5,"IA":5.5,"ID":7.0,"IL":10.0,"IN":10.0,"KS":7.0,"KY":10.5,"LA":16.1,"MA":1.8,"MD":9.5,"ME":4.0,"MI":8.5,"MN":3.5,"MO":12.0,"MS":18.0,"MT":8.5,"NC":9.5,"ND":5.0,"NE":5.5,"NH":2.5,"NJ":3.0,"NM":12.0,"NV":8.0,"NY":4.5,"OH":9.0,"OK":14.0,"OR":6.5,"PA":8.5,"RI":3.0,"SC":12.0,"SD":7.0,"TN":13.0,"TX":10.5,"UT":5.5,"VA":6.0,"VT":3.5,"WA":5.5,"WI":6.0,"WV":13.5,"WY":9.0}},
+"Uninsured Women":{unit:"%",good:false,data:{"AK":16.5,"AR":13.0,"AL":15.0,"AZ":14.0,"CT":7.0,"CA":8.5,"CO":9.5,"DE":7.5,"FL":16.5,"GA":16.5,"HI":5.0,"IA":6.5,"ID":16.5,"IL":8.5,"IN":10.0,"KS":10.5,"KY":7.0,"LA":8.6,"MA":3.5,"MD":6.0,"ME":8.5,"MI":8.0,"MN":5.5,"MO":10.5,"MS":18.0,"MT":14.5,"NC":15.5,"ND":8.0,"NE":8.5,"NH":7.5,"NJ":8.0,"NM":16.5,"NV":16.0,"NY":8.0,"OH":9.0,"OK":20.5,"OR":9.0,"PA":7.5,"RI":6.0,"SC":16.5,"SD":14.5,"TN":11.5,"TX":23.5,"UT":9.5,"VA":9.0,"VT":5.5,"WA":8.5,"WI":7.0,"WV":9.5,"WY":16.5}},
+"Uninsured Children":{unit:"%",good:false,data:{"AK":9.5,"AR":6.5,"AL":6.5,"AZ":7.5,"CT":3.0,"CA":4.0,"CO":4.5,"DE":3.5,"FL":9.5,"GA":8.5,"HI":2.5,"IA":3.5,"ID":8.5,"IL":4.5,"IN":5.0,"KS":5.5,"KY":3.5,"LA":4.3,"MA":1.5,"MD":2.5,"ME":4.0,"MI":4.5,"MN":2.5,"MO":5.5,"MS":10.0,"MT":8.0,"NC":7.5,"ND":3.5,"NE":4.5,"NH":4.0,"NJ":4.0,"NM":7.5,"NV":8.5,"NY":3.5,"OH":4.5,"OK":12.5,"OR":4.5,"PA":4.0,"RI":3.0,"SC":9.0,"SD":7.5,"TN":5.5,"TX":14.5,"UT":4.0,"VA":4.5,"VT":2.5,"WA":4.5,"WI":3.5,"WV":5.0,"WY":9.5}},
+"Well Woman Visit":{unit:"%",good:true,data:{"AK":61.0,"AR":57.0,"AL":59.5,"AZ":64.5,"CT":72.5,"CA":70.0,"CO":73.5,"DE":72.0,"FL":66.0,"GA":65.5,"HI":72.0,"IA":69.0,"ID":64.0,"IL":69.5,"IN":67.0,"KS":66.5,"KY":64.5,"LA":80.3,"MA":78.5,"MD":75.5,"ME":71.0,"MI":69.5,"MN":75.0,"MO":66.5,"MS":58.5,"MT":63.5,"NC":68.0,"ND":66.5,"NE":68.5,"NH":76.5,"NJ":76.0,"NM":60.5,"NV":60.5,"NY":73.5,"OH":68.5,"OK":59.0,"OR":70.5,"PA":70.0,"RI":73.0,"SC":63.5,"SD":65.5,"TN":63.5,"TX":60.5,"UT":71.5,"VA":70.5,"VT":76.0,"WA":71.5,"WI":70.5,"WV":59.5,"WY":60.5}},
+"Breastfeeding Initiation":{unit:"%",good:true,data:{"AK":83.5,"AR":65.0,"AL":67.5,"AZ":83.5,"CT":88.5,"CA":90.5,"CO":91.5,"DE":80.5,"FL":80.5,"GA":76.5,"HI":90.5,"IA":79.5,"ID":84.0,"IL":82.0,"IN":73.0,"KS":79.5,"KY":68.5,"LA":71.1,"MA":88.0,"MD":86.5,"ME":82.5,"MI":77.5,"MN":87.5,"MO":74.0,"MS":65.5,"MT":82.5,"NC":79.5,"ND":80.0,"NE":81.5,"NH":89.5,"NJ":88.0,"NM":78.0,"NV":78.0,"NY":85.5,"OH":73.5,"OK":68.5,"OR":89.5,"PA":77.5,"RI":84.5,"SC":73.5,"SD":78.5,"TN":68.5,"TX":78.5,"UT":89.0,"VA":83.5,"VT":88.0,"WA":90.5,"WI":83.0,"WV":63.5,"WY":79.5}},
+"Teen Suicide":{unit:"per 100,000",good:false,data:{"AK":28.5,"AR":14.0,"AL":13.5,"AZ":14.5,"CT":6.5,"CA":5.5,"CO":14.5,"DE":8.5,"FL":9.5,"GA":11.5,"HI":8.0,"IA":11.0,"ID":18.5,"IL":7.5,"IN":13.0,"KS":13.5,"KY":15.5,"LA":10.7,"MA":5.5,"MD":7.5,"ME":14.0,"MI":9.5,"MN":9.0,"MO":14.5,"MS":14.5,"MT":27.5,"NC":10.5,"ND":18.0,"NE":13.5,"NH":11.0,"NJ":5.0,"NM":21.0,"NV":20.5,"NY":5.5,"OH":11.5,"OK":18.5,"OR":19.5,"PA":9.5,"RI":6.5,"SC":13.5,"SD":22.0,"TN":14.0,"TX":11.5,"UT":22.0,"VA":9.0,"VT":14.5,"WA":14.0,"WI":11.0,"WV":18.5,"WY":31.0}},
+"Adequate Prenatal Care":{unit:"%",good:true,data:{"AK":72.0,"AR":64.5,"AL":69.5,"AZ":77.5,"CT":87.5,"CA":82.5,"CO":79.5,"DE":80.5,"FL":79.5,"GA":74.5,"HI":83.5,"IA":80.5,"ID":75.5,"IL":77.0,"IN":72.5,"KS":77.5,"KY":73.5,"LA":75.1,"MA":88.5,"MD":82.5,"ME":79.5,"MI":74.5,"MN":84.5,"MO":72.5,"MS":66.5,"MT":74.5,"NC":76.0,"ND":81.5,"NE":80.0,"NH":88.0,"NJ":85.5,"NM":71.5,"NV":73.0,"NY":83.5,"OH":74.5,"OK":68.5,"OR":79.5,"PA":78.5,"RI":83.5,"SC":72.0,"SD":80.0,"TN":71.0,"TX":74.0,"UT":83.5,"VA":81.0,"VT":85.5,"WA":84.0,"WI":80.5,"WV":67.5,"WY":75.0}}},
+equity:{"Infant Mortality":{"Black":{nat:11.05,la:11.0},"White":{nat:4.52,la:5.2},"Hispanic":{nat:5.44,la:4.6},"Asian":{nat:4.04,la:null},"Amer Indian":{nat:10.24,la:null}},
+"Children in Poverty":{"Black":{nat:32.5,la:42.0},"White":{nat:11.5,la:14.5},"Hispanic":{nat:25.0,la:28.5},"Asian":{nat:9.5,la:null}},
+"Teen Births":{"Black":{nat:26.0,la:31.5},"White":{nat:11.5,la:16.5},"Hispanic":{nat:24.0,la:20.0}},
+"Low Birth Weight":{"Black":{nat:14.0,la:15.2},"White":{nat:7.0,la:8.5},"Hispanic":{nat:7.2,la:7.8}}}
+};
+
+function getScoreColor(s){if(s>0.3)return'#10b981';if(s>0)return'#4499ff';if(s>-0.3)return'#f59e0b';return'#ef4444';}
+function rgba(r,g,b,a){return`rgba(${r},${g},${b},${a})`;}
+
+function showPage(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(el)el.classList.add('active');
+  if(id==='rankings'){setTimeout(()=>{updateRankings();updateRadar();},100);}
+  if(id==='indicators'){setTimeout(updateIndicator,100);}
+  if(id==='equity'){setTimeout(buildEquity,100);}
+  if(id==='spotlight'){setTimeout(buildSpotlight,100);}
+  if(id==='quadrant'){setTimeout(buildQuadrant,100);}
+}
+
+function buildOverview(){
+  new Chart(document.getElementById('regionChart'),{type:'bar',data:{labels:['Northeast','Midwest','West','South'],datasets:[{label:'Avg Score',data:[0.425,0.092,0.060,-0.329],backgroundColor:['rgba(16,185,129,0.7)','rgba(68,153,255,0.7)','rgba(168,85,247,0.7)','rgba(239,68,68,0.7)'],borderColor:['#10b981','#4499ff','#a855f7','#ef4444'],borderWidth:1.5,borderRadius:6}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#1b1f2d'},ticks:{callback:v=>v.toFixed(2)}},x:{grid:{display:false}}}}});
+  const sorted=Object.entries(DATA.overall).sort((a,b)=>a[1].rank-b[1].rank);
+  new Chart(document.getElementById('distChart'),{type:'bar',data:{labels:sorted.map(([s])=>s),datasets:[{label:'Score',data:sorted.map(([,d])=>d.score),backgroundColor:sorted.map(([,d])=>getScoreColor(d.score)+'bb'),borderColor:sorted.map(([,d])=>getScoreColor(d.score)),borderWidth:1,borderRadius:3}]},options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${DATA.stateNames[c.label]}: ${c.parsed.y.toFixed(3)}`}}},scales:{y:{grid:{color:'#1b1f2d'}},x:{grid:{display:false},ticks:{font:{size:9}}}}}});
+  const map=document.getElementById('stateMap');
+  sorted.forEach(([st,d])=>{const cell=document.createElement('div');cell.className='state-cell';cell.textContent=st;const p=d.rank/50;const r=Math.round(p*239+(1-p)*16);const g=Math.round(p*68+(1-p)*185);const b=Math.round(p*68+(1-p)*129);cell.style.background=`rgba(${r},${g},${b},0.85)`;cell.style.color=p>0.5?'#08090d':'#e8ecf4';cell.title=`${DATA.stateNames[st]} | Rank: ${d.rank}/50 | Score: ${d.score.toFixed(3)}`;map.appendChild(cell);});
+  const top10=sorted.slice(0,10);const bot10=sorted.slice(-10).reverse();
+  function rows(arr,cls){return arr.map(([s,d])=>`<tr><td><span class="rank-badge ${cls}">${d.rank}</span></td><td>${s}</td><td style="color:var(--text-secondary)">${DATA.stateNames[s]}</td><td class="text-mono" style="color:${getScoreColor(d.score)}">${d.score.toFixed(3)}</td></tr>`).join('');}
+  document.getElementById('topStatesTable').innerHTML=`<table class="data-table"><thead><tr><th>Rank</th><th>ST</th><th>State</th><th>Score</th></tr></thead><tbody>${rows(top10,'rank-1-10')}</tbody></table>`;
+  document.getElementById('bottomStatesTable').innerHTML=`<table class="data-table"><thead><tr><th>Rank</th><th>ST</th><th>State</th><th>Score</th></tr></thead><tbody>${rows(bot10,'rank-41-50')}</tbody></table>`;
+}
+
+let rankChart,radChart;
+function updateRankings(){
+  const domain=document.getElementById('domainSelect').value;
+  const region=document.getElementById('regionFilter').value;
+  document.getElementById('rankingsChartLabel').textContent=`State Rankings — ${domain}`;
+  let data;
+  if(domain==='Overall'){data=Object.entries(DATA.overall).map(([s,d])=>({s,score:d.score,rank:d.rank}));}
+  else{const vals=Object.entries(DATA.domains[domain]);data=vals.map(([s,score])=>({s,score,rank:0}));data.sort((a,b)=>b.score-a.score);data.forEach((d,i)=>d.rank=i+1);}
+  if(region!=='all')data=data.filter(d=>DATA.regions[d.s]===region);
+  data.sort((a,b)=>b.score-a.score);
+  const canvas=document.getElementById('rankingsChart');
+  canvas.style.height=Math.max(500,data.length*22)+'px';
+  if(rankChart)rankChart.destroy();
+  rankChart=new Chart(canvas,{type:'bar',data:{labels:data.map(d=>`${d.s} — ${DATA.stateNames[d.s]}`),datasets:[{label:domain,data:data.map(d=>d.score),backgroundColor:data.map(d=>d.s==='LA'?'rgba(245,158,11,0.9)':getScoreColor(d.score)+'99'),borderColor:data.map(d=>d.s==='LA'?'#f59e0b':getScoreColor(d.score)),borderWidth:data.map(d=>d.s==='LA'?2:1),borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` Score: ${c.parsed.x.toFixed(3)}`}}},scales:{x:{grid:{color:'#1b1f2d'},ticks:{callback:v=>v.toFixed(1)}},y:{grid:{display:false},ticks:{font:{size:10}}}}}});
+}
+
+function updateRadar(){
+  const s1=document.getElementById('stateCompare1').value;
+  const s2=document.getElementById('stateCompare2').value;
+  const dk=['Health Outcomes','Clinical Care','Social & Economic','Behaviors','Physical Environment'];
+  function getV(s){if(s==='US')return dk.map(d=>{const v=Object.values(DATA.domains[d]);return v.reduce((a,b)=>a+b,0)/v.length;});return dk.map(d=>DATA.domains[d][s]||0);}
+  if(radChart)radChart.destroy();
+  radChart=new Chart(document.getElementById('radarChart'),{type:'radar',data:{labels:dk,datasets:[{label:DATA.stateNames[s1]||s1,data:getV(s1),backgroundColor:'rgba(245,158,11,0.15)',borderColor:'#f59e0b',pointBackgroundColor:'#f59e0b',pointRadius:4},{label:s2==='US'?'National Avg':DATA.stateNames[s2],data:getV(s2),backgroundColor:'rgba(0,229,196,0.15)',borderColor:'#00e5c4',pointBackgroundColor:'#00e5c4',pointRadius:4}]},options:{responsive:true,plugins:{legend:{labels:{boxWidth:10}}},scales:{r:{grid:{color:'#252836'},angleLines:{color:'#252836'},ticks:{display:false},pointLabels:{font:{size:10}}}}}});
+  const v1=getV(s1),v2=getV(s2);
+  document.getElementById('radarStats').innerHTML=`<table class="data-table"><thead><tr><th>Domain</th><th>${s1}</th><th>${s2==='US'?'Nat Avg':s2}</th><th>Gap</th></tr></thead><tbody>${dk.map((d,i)=>{const gap=v1[i]-v2[i];return`<tr><td class="text-sm">${d}</td><td class="text-mono" style="color:${getScoreColor(v1[i])}">${v1[i].toFixed(3)}</td><td class="text-mono" style="color:${getScoreColor(v2[i])}">${v2[i].toFixed(3)}</td><td class="text-mono" style="color:${gap>=0?'#10b981':'#ef4444'}">${gap>0?'+':''}${gap.toFixed(3)}</td></tr>`;}).join('')}</tbody></table>`;
+}
+
+let indChart;
+function updateIndicator(){
+  const name=document.getElementById('indicatorSelect').value;
+  const ind=DATA.indicators[name];if(!ind)return;
+  document.getElementById('indicatorChartTitle').textContent=`${name} — All States`;
+  const entries=Object.entries(ind.data);
+  entries.sort((a,b)=>ind.good?b[1]-a[1]:a[1]-b[1]);
+  const vals=entries.map(([,v])=>v);
+  const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
+  document.getElementById('indicatorNatAvg').innerHTML=`<span class="unit-tag">Nat Avg: ${avg.toFixed(1)} ${ind.unit}</span>`;
+  if(indChart)indChart.destroy();
+  indChart=new Chart(document.getElementById('indicatorChart'),{type:'bar',data:{labels:entries.map(([s])=>s),datasets:[{label:name,data:entries.map(([,v])=>v),backgroundColor:entries.map(([s])=>s==='LA'?'rgba(245,158,11,0.9)':'rgba(68,153,255,0.6)'),borderColor:entries.map(([s])=>s==='LA'?'#f59e0b':'#4499ff'),borderWidth:entries.map(([s])=>s==='LA'?2:1),borderRadius:3},{label:'National Average',data:entries.map(()=>avg),type:'line',borderColor:'rgba(0,229,196,0.8)',borderWidth:1.5,borderDash:[4,4],pointRadius:0,fill:false}]},options:{responsive:true,plugins:{legend:{labels:{boxWidth:10}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${typeof c.parsed.y==='number'?c.parsed.y.toFixed(1):''} ${ind.unit}`}}},scales:{y:{grid:{color:'#1b1f2d'}},x:{grid:{display:false},ticks:{font:{size:9}}}}}});
+  const sv=[...vals].sort((a,b)=>a-b);
+  const std=Math.sqrt(vals.map(v=>(v-avg)**2).reduce((a,b)=>a+b,0)/vals.length);
+  const laVal=ind.data['LA'];const diff=laVal?laVal-avg:null;const isBetter=ind.good?(diff>0):(diff<0);
+  document.getElementById('indicatorStats').innerHTML=`<div class="bar-row"><div class="bar-label">National Mean</div><div class="bar-val text-mono">${avg.toFixed(1)}</div></div><div class="bar-row"><div class="bar-label">Std Deviation</div><div class="bar-val text-mono">±${std.toFixed(1)}</div></div><div class="bar-row"><div class="bar-label">Best Value</div><div class="bar-val text-mono text-green">${sv[0].toFixed(1)}</div></div><div class="bar-row"><div class="bar-label">Worst Value</div><div class="bar-val text-mono text-red">${sv[sv.length-1].toFixed(1)}</div></div><div class="bar-row"><div class="bar-label">Louisiana</div><div class="bar-val text-mono text-amber">${laVal?laVal.toFixed(1):'N/A'}</div></div><div class="bar-row"><div class="bar-label">LA vs Avg</div><div class="bar-val text-mono" style="color:${diff!==null?(isBetter?'#10b981':'#ef4444'):'#8891a8'}">${diff!==null?(diff>0?'+':'')+diff.toFixed(1):'N/A'}</div></div>`;
+  const best=entries.slice(0,5);const worst=entries.slice(-5).reverse();
+  document.getElementById('indicatorBest').innerHTML=best.map(([s,v],i)=>`<div class="bar-row"><div class="bar-label"><span class="rank-badge rank-1-10" style="width:20px;height:20px;font-size:10px">${i+1}</span> ${s} — ${DATA.stateNames[s]}</div><div class="bar-val text-mono text-green">${v.toFixed(1)}</div></div>`).join('');
+  document.getElementById('indicatorWorst').innerHTML=worst.map(([s,v],i)=>`<div class="bar-row"><div class="bar-label"><span class="rank-badge rank-41-50" style="width:20px;height:20px;font-size:10px">${50-i}</span> ${s} — ${DATA.stateNames[s]}</div><div class="bar-val text-mono text-red">${v.toFixed(1)}</div></div>`).join('');
+}
+
+function buildEquity(){
+  const colors=['rgba(239,68,68,0.7)','rgba(68,153,255,0.7)','rgba(168,85,247,0.7)','rgba(0,229,196,0.7)','rgba(245,158,11,0.7)'];
+  const bc=['#ef4444','#4499ff','#a855f7','#00e5c4','#f59e0b'];
+  function makeChart(id,data,label2){
+    const races=Object.keys(data);
+    new Chart(document.getElementById(id),{type:'bar',data:{labels:races,datasets:[{label:'National Avg',data:races.map(r=>data[r].nat),backgroundColor:colors,borderColor:bc,borderWidth:1.5,borderRadius:4},{label:'Louisiana',data:races.map(r=>data[r].la),backgroundColor:races.map(()=>'rgba(245,158,11,0.3)'),borderColor:races.map(()=>'#f59e0b'),borderWidth:2,borderRadius:4}]},options:{responsive:true,plugins:{legend:{labels:{boxWidth:10}}},scales:{y:{grid:{color:'#1b1f2d'}},x:{grid:{display:false}}}}});
+  }
+  makeChart('equityRaceChart',DATA.equity['Infant Mortality']);
+  makeChart('equityPovertyChart',DATA.equity['Children in Poverty']);
+  makeChart('equityTeenChart',DATA.equity['Teen Births']);
+  const gapData=[{s:'MA',b:7.2,w:3.1},{s:'MN',b:8.5,w:3.8},{s:'WI',b:14.0,w:4.2},{s:'IL',b:13.2,w:4.5},{s:'OH',b:13.5,w:5.2},{s:'GA',b:12.8,w:5.5},{s:'MS',b:13.0,w:6.8},{s:'AL',b:12.5,w:6.5},{s:'LA',b:11.0,w:5.2},{s:'TX',b:11.2,w:4.8}];
+  new Chart(document.getElementById('equityGapChart'),{type:'bar',data:{labels:gapData.map(d=>d.s),datasets:[{label:'Black',data:gapData.map(d=>d.b),backgroundColor:'rgba(239,68,68,0.7)',borderColor:'#ef4444',borderWidth:1,borderRadius:3},{label:'White',data:gapData.map(d=>d.w),backgroundColor:'rgba(68,153,255,0.7)',borderColor:'#4499ff',borderWidth:1,borderRadius:3}]},options:{responsive:true,plugins:{legend:{labels:{boxWidth:10}}},scales:{y:{grid:{color:'#1b1f2d'},title:{display:true,text:'per 1,000 births',color:'#4a5168'}},x:{grid:{display:false}}}}});
+  let html=`<table class="data-table"><thead><tr><th>Metric</th><th>Race</th><th>National Avg</th><th>Louisiana</th><th>LA vs National</th></tr></thead><tbody>`;
+  Object.entries(DATA.equity).forEach(([metric,groups])=>{Object.entries(groups).forEach(([race,vals])=>{if(vals.la===null)return;const diff=vals.la-vals.nat;const isBad=!metric.includes('Visit')&&!metric.includes('Breast');html+=`<tr><td class="text-sm">${metric}</td><td class="text-mono text-xs">${race}</td><td class="text-mono">${vals.nat.toFixed(1)}</td><td class="text-mono text-amber">${vals.la.toFixed(1)}</td><td class="text-mono" style="color:${isBad?(diff>0?'#ef4444':'#10b981'):(diff>0?'#10b981':'#ef4444')}">${diff>0?'+':''}${diff.toFixed(1)}</td></tr>`;});});
+  html+='</tbody></table>';document.getElementById('equitySummaryTable').innerHTML=html;
+}
+
+function buildSpotlight(){
+  const dk=['Health Outcomes','Clinical Care','Social & Economic','Behaviors','Physical Environment'];
+  new Chart(document.getElementById('laRadarChart'),{type:'radar',data:{labels:dk,datasets:[{label:'Louisiana',data:[-1.210,0.289,-1.044,-1.188,-0.579],backgroundColor:'rgba(245,158,11,0.15)',borderColor:'#f59e0b',pointBackgroundColor:'#f59e0b',pointRadius:5},{label:'National Average',data:[-0.141,0.207,0.019,-0.024,0.120],backgroundColor:'rgba(68,153,255,0.1)',borderColor:'rgba(68,153,255,0.7)',borderDash:[4,4],pointRadius:3},{label:'Best State (MA)',data:[0.756,1.483,0.966,0.938,0.620],backgroundColor:'rgba(16,185,129,0.05)',borderColor:'rgba(16,185,129,0.5)',borderDash:[2,4],pointRadius:2}]},options:{responsive:true,plugins:{legend:{labels:{boxWidth:10}}},scales:{r:{grid:{color:'#252836'},angleLines:{color:'#252836'},ticks:{display:false},min:-1.6,max:1.6,pointLabels:{font:{size:10}}}}}});
+  const zscores=[{n:'Health Outcomes',z:-2.35,c:'#ef4444'},{n:'Behaviors',z:-2.23,c:'#ef4444'},{n:'Physical Environment',z:-2.35,c:'#ef4444'},{n:'Social & Economic',z:-1.93,c:'#f59e0b'},{n:'Clinical Care',z:0.14,c:'#10b981'}];
+  document.getElementById('laDomainBars').innerHTML=zscores.map(d=>`<div class="bar-row"><div class="bar-label">${d.n}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.min(100,Math.abs(d.z)/3*100)}%;background:${d.c}"></div></div><div class="bar-val text-mono" style="color:${d.c}">${d.z>0?'+':''}${d.z.toFixed(2)}</div></div>`).join('');
+  const gaps=[{n:'Overall Ranking',r:50,v:'Last in Nation'},{n:'Children in Poverty',r:49,v:'25.0%'},{n:'Low Birth Weight',r:49,v:'11.3%'},{n:'Child Mortality',r:49,v:'48.9/100k'},{n:'Breastfeeding Initiation',r:47,v:'71.1%'},{n:'Food Insecurity',r:47,v:'16.2%'},{n:'Teen Births',r:48,v:'23.1'},{n:'Infant Mortality',r:48,v:'7.3/1,000'},{n:'Maternal Mortality',r:46,v:'40.7/100k'},{n:'Obesity — Women',r:46,v:'41.9%'}];
+  const strengths=[{n:'Well-Woman Visit',r:1,v:'80.3%'},{n:'Cervical Cancer Screening',r:5,v:'57.7%'},{n:'Clinical Care — Children',r:23,v:'Score: +0.356'},{n:'Teen Suicide Rate',r:17,v:'10.7/100k'},{n:'Uninsured Women',r:24,v:'8.6%'},{n:'Uninsured Children',r:24,v:'4.3%'}];
+  function rankCls(r){return r<=10?'rank-1-10':r<=25?'rank-11-25':r<=40?'rank-26-40':'rank-41-50';}
+  document.getElementById('laCriticalGaps').innerHTML=gaps.map(g=>`<div class="flex items-center justify-between mb-4" style="padding:8px 0;border-bottom:1px solid var(--border)"><div><div class="text-sm">${g.n}</div><div class="text-xs text-secondary">${g.v}</div></div><span class="rank-badge rank-41-50">${g.r}</span></div>`).join('');
+  document.getElementById('laStrengths').innerHTML=strengths.map(g=>`<div class="flex items-center justify-between mb-4" style="padding:8px 0;border-bottom:1px solid var(--border)"><div><div class="text-sm">${g.n}</div><div class="text-xs text-secondary">${g.v}</div></div><span class="rank-badge ${rankCls(g.r)}">${g.r}</span></div>`).join('');
+  const south=['MD','VA','DE','NC','FL','GA','TX','SC','KY','TN','WV','AL','OK','AR','MS','LA'];
+  const sd=south.map(s=>({s,score:DATA.overall[s]?.score||0})).sort((a,b)=>b.score-a.score);
+  new Chart(document.getElementById('laSouthChart'),{type:'bar',data:{labels:sd.map(d=>`${d.s} — ${DATA.stateNames[d.s]}`),datasets:[{label:'Overall Score',data:sd.map(d=>d.score),backgroundColor:sd.map(d=>d.s==='LA'?'rgba(245,158,11,0.9)':'rgba(68,153,255,0.6)'),borderColor:sd.map(d=>d.s==='LA'?'#f59e0b':'#4499ff'),borderWidth:sd.map(d=>d.s==='LA'?2:1),borderRadius:4}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:'#1b1f2d'},ticks:{callback:v=>v.toFixed(1)}},y:{grid:{display:false},ticks:{font:{size:10}}}}}});
+}
+
+function buildQuadrant(){
+  const pts=Object.entries(DATA.overall).map(([s,d])=>({x:d.score,y:51-d.rank,s,rank:d.rank}));
+  new Chart(document.getElementById('scatterChart'),{type:'scatter',data:{datasets:[{label:'States',data:pts.filter(p=>p.s!=='LA'),backgroundColor:pts.filter(p=>p.s!=='LA').map(p=>getScoreColor(p.x)+'99'),borderColor:pts.filter(p=>p.s!=='LA').map(p=>getScoreColor(p.x)),pointRadius:6},{label:'Louisiana',data:pts.filter(p=>p.s==='LA'),backgroundColor:'rgba(245,158,11,0.9)',borderColor:'#f59e0b',pointRadius:12,pointStyle:'star'}]},options:{responsive:true,plugins:{legend:{labels:{boxWidth:10}},tooltip:{callbacks:{label:c=>{const d=c.raw;return` ${d.s} — Rank:${d.rank} | Score:${d.x.toFixed(3)}`;}}}},scales:{x:{title:{display:true,text:'Composite Score',color:'#4a5168'},grid:{color:'#1b1f2d'}},y:{title:{display:true,text:'Inverted Rank',color:'#4a5168'},grid:{color:'#1b1f2d'}}}}});
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  buildOverview();
+  const states=Object.keys(DATA.stateNames).sort();
+  ['stateCompare1','stateCompare2'].forEach(id=>{
+    const sel=document.getElementById(id);if(!sel)return;
+    sel.innerHTML='';
+    states.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=`${s} — ${DATA.stateNames[s]}`;sel.appendChild(o);});
+    const n=document.createElement('option');n.value='US';n.textContent='US — National Average';sel.appendChild(n);
+  });
+  document.getElementById('stateCompare1').value='LA';
+  document.getElementById('stateCompare2').value='MA';
+  updateIndicator();
+});
+</script>
+</body>
+</html>
